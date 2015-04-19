@@ -75,7 +75,7 @@ class Level():
     def decreaseEnv(self,decrease):
         self.envheight -= decrease
         r,g,b = self.caveColor
-        r += 40
+        r += 1
         if r > 255:
             r = 255
         self.caveColor = (r,g,b) 
@@ -241,8 +241,8 @@ def main():
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
         score += 1
-        if score != 0 and score % 1000 == 0:
-            mylevel.decreaseEnv(20)
+        if score != 0 and score % 50 == 0:
+            mylevel.decreaseEnv(1)
 
     if lost:
         menuScreen(screen,clock,'Congrats your score was {0}'.format(score))

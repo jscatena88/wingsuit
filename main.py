@@ -20,7 +20,7 @@ SCROLLSPEED = 5
 class Level(): 
     def __init__(self, x, y, height, envheight): #screensize x, screensize y, distance between roof and floor, height of envelope
         self.x=int(math.sqrt(x*x+y*y)) #sqrt of width^2 +height^2
-        print self.x
+        #print self.x
         self.y=self.x
         self.height=height
         self.envheight=envheight
@@ -223,7 +223,7 @@ def main():
         elif key[pygame.K_DOWN]:
             angle = 1
         playerX, playerY = player.update(angle)
-        print playerY
+        #print playerY
         playerxy= int(playerX), int(playerY)
 
         # Limit to 60 frames per second
@@ -241,7 +241,7 @@ def main():
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
         score += 1
-        if score != 0 and score % 50 == 0:
+        if score != 0 and score % 100 == 0:
             mylevel.decreaseEnv(1)
 
     if lost:

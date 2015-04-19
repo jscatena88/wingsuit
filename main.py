@@ -28,6 +28,7 @@ class Level():
         self.floory= y/2-height/2#y coordinate of floor
         self.ydir=1
         self.q=collections.deque()
+        self.caveColor = GRAY
         self.bigdisplay=pygame.Surface((self.x,self.y))
         self.oldy=y/2 # start generating from the middle of the map        
         self.rotatedScreen = pygame.Surface((1,1))
@@ -56,9 +57,9 @@ class Level():
         # loop through q 
         for x, element in enumerate(self.q):
             #constructs two lines for every x value to make curves
-            pygame.draw.line(self.bigdisplay, GRAY, (x, 0), (x, (element-self.envheight)))
+            pygame.draw.line(self.bigdisplay, self.caveColor, (x, 0), (x, (element-self.envheight)))
             self.bigdisplay.set_at((x, element-self.envheight), BLACK)
-            pygame.draw.line(self.bigdisplay, GRAY, (x, self.x), (x, element+self.envheight))
+            pygame.draw.line(self.bigdisplay, self.caveColor, (x, self.x), (x, element+self.envheight))
             self.bigdisplay.set_at((x, element+self.envheight), BLACK)
         self.rotatedScreen=pygame.transform.rotate(self.bigdisplay,-45)#.convert(),-45)
         return self.rotatedScreen
@@ -71,6 +72,14 @@ class Level():
             self.q.append(newy)#enqueue
             self.oldy=newy
 
+    def decreaseEnv(self,decrease):
+        self.envheight -= decrease
+        r,g,b = self.caveColor
+        r += 40
+        if r > 255:
+            r = 255
+        self.caveColor = (r,g,b) 
+        
 
     def collision(self, (x,y),surface):
         for i in range (x,x+PLAYER_SIZE):
@@ -225,6 +234,8 @@ def main():
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
         score += 1
+        if score != 0 and score % 1000 == 0:
+            mylevel.decreaseEnv(20)
 
     if lost:
         menuScreen(screen,clock,'Congrats your score was {0}'.format(score))

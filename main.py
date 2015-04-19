@@ -182,7 +182,13 @@ def menuScreen(screen, clock, text):
                 inMenu = False
         clock.tick(60)
 
-
+def Scorecounter(screen, score):
+    myfont=pygame.font.SysFont('Arial Black', 30)
+    label= myfont.render("You're Score is: %d" % score, 1, WHITE)
+    x = 20
+    y = HEIGHT-70
+    screen.blit(label, (x,y))
+    pygame.display.flip()
     
 def main():
     pygame.init()
@@ -230,6 +236,7 @@ def main():
             running = False
             lost = True
         player.draw(screen, 0)
+        Scorecounter(screen, score)
 
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()

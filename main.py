@@ -11,10 +11,6 @@ BLUE = (0,0,255)
 
 class Player(pygame.sprite.Sprite):
     """ Class for the player's character """
-    GRAVITY = 0.0169706
-    LIFT_COEF = .0015000
-    DRAG_COEF = .0015000
-    MOMENTUM_COEF = 0
     
     def __init__(self, xPos, yPos):
         """ Constructor """
@@ -32,11 +28,11 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
         #Physics Vars
-        self.velocity = 2.8
-        self.velocity_x = 2
         self.velocity_y = 2
-        self.angle = 45
-        self.ANGLE_MAX = 175
+        self.direction = 0
+        self.ANGLE_MAX = 130
+        self.energy = 0
+        self.rampUp = 0.0
         
         #Drawing vars
         self.xPos = xPos
@@ -44,32 +40,40 @@ class Player(pygame.sprite.Sprite):
 
 
     def draw(self, screen, yVelocity):
-        self.yPos += yVelocity + self.velocity_x
-        print 'yPos:{0}'.format(self.yPos)
+        #print yVelocity + self.velocity_y
+        self.yPos += yVelocity + self.velocity_y
+        #print 'yPos:{0}'.format(self.yPos)
         self.rect.x = self.xPos
         self.rect.y = self.yPos
         screen.blit(self.image, self.rect)
-        pygame.draw.line(screen,RED, (self.rect.x+20, self.rect.y+20), (20+self.rect.x + 150*math.sin(math.radians(self.angle)), 20+self.rect.y+150*math.cos(math.radians(self.angle))), 3)
+        #pygame.draw.line(screen,RED, (self.rect.x+20, self.rect.y+20), (20+self.rect.x + 150*math.sin(math.radians(self.angle)), 20+self.rect.y+150*math.cos(math.radians(self.angle))), 3)
 
-    def update(self,angle_change):
-        self.angle += angle_change
-        if self.angle > self.ANGLE_MAX:
-            self.angle = self.ANGLE_MAX
-        elif self.angle < 0:
-            self.angle = 0
+    def update(self,direction):
+        self.direction = direction
         self.calc_physics()
         
 
     def calc_physics(self):
-        lift = Player.LIFT_COEF * self.velocity * self.velocity
-        drag = Player.DRAG_COEF * self.velocity * self.velocity
-        momentum = Player.MOMENTUM_COEF * self.velocity
-        AngCos = math.cos(math.radians(self.angle))
-        AngSin = math.sin(math.radians(self.angle))
-        #print 'l:{0} d:{1} m:{2} Cos:{3} Sin:{4}'.format(lift,drag,momentum,AngCos,AngSin)
-        self.velocity_x += lift*AngCos+momentum*AngSin-drag*AngSin
-        self.velocity_y += -lift*AngSin+momentum*AngCos-drag*AngCos+Player.GRAVITY
-        self.velocity = math.sqrt((self.velocity_x * self.velocity_x) + (self.velocity_y * self.velocity_y))
+        if self.direction == 1:
+            self.rampUp += .65
+            self.velocity_y = self.rampUp
+            if self.energy < 300:
+                self.energy += self.velocity_y
+        elif self.direction == -1:
+            self.rampUp = 0
+            self.velocity_y = -.09*self.energy
+            self.energy *= .935
+            if self.energy < 2:
+                self.energy = 2
+        else:
+            if self.energy < 2:
+                self.energy = 2
+            else:
+                self.energy *= .98
+            self.rampUp = 0
+            self.velocity_y = 0
+        print self.energy
+            
 
 def main():
     pygame.init()
@@ -95,11 +99,11 @@ def main():
         key = pygame.key.get_pressed()
         angle = 0
         if key[pygame.K_UP]:
-            angle = 5
+            angle = -1
         elif key[pygame.K_DOWN]:
-            angle = -5
+            angle = 1
         player.update(angle)
-        player.draw(screen, -2)
+        player.draw(screen, 0)
         # Limit to 60 frames per second
         clock.tick(60)
  

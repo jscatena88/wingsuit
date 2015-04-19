@@ -14,7 +14,7 @@ WHITE = (255,255,255)
 GREEN = (0,255,0)
 RED = (255,0,0)
 BLUE = (150,204,204)
-SCROLLSPEED= 5
+SCROLLSPEED = 5
 
 #### LEVEL CLASS
 class Level(): 
@@ -32,13 +32,13 @@ class Level():
         self.oldy=y/2 # start generating from the middle of the map        
         self.rotatedScreen = pygame.Surface((1,1))
         for x in range(0, self.x):
-            newy=self.getnexty()
+            newy=int(self.y/2.5) #self.getnexty()
             self.q.append(newy)#enque
             self.oldy=newy
         
 
     def getnexty(self):
-        if random.randint(0,50)==25:
+        if random.randint(0,80)==25:
             self.ydir*=-1
 
         #if envelope butts up against roof
@@ -48,22 +48,18 @@ class Level():
         #if envelope butts up against floor
         if self.oldy<= self.floory+self.envheight and self.ydir==-1:
             self.ydir=1
-        return self.oldy + random.randint(0,2) *self.ydir
+        return self.oldy + random.randint(0,3) *self.ydir
         
 
     def draw(self):
         self.bigdisplay.fill(BLUE)
-        x=0
-        # loop through q and x 
-        for element in self.q:
-            if x in range (0,self.x):
-                #constructs two lines for every x value to make curves
-                rand=random.randint(1,20)
-                pygame.draw.line(self.bigdisplay, GRAY, (x, 0), (x, (element-self.envheight)))
-                self.bigdisplay.set_at((x, element-self.envheight), BLACK)
-                pygame.draw.line(self.bigdisplay, GRAY, (x, self.x), (x, element+self.envheight))
-                self.bigdisplay.set_at((x, element+self.envheight), BLACK)
-                x+=1
+        # loop through q 
+        for x, element in enumerate(self.q):
+            #constructs two lines for every x value to make curves
+            pygame.draw.line(self.bigdisplay, GRAY, (x, 0), (x, (element-self.envheight)))
+            self.bigdisplay.set_at((x, element-self.envheight), BLACK)
+            pygame.draw.line(self.bigdisplay, GRAY, (x, self.x), (x, element+self.envheight))
+            self.bigdisplay.set_at((x, element+self.envheight), BLACK)
         self.rotatedScreen=pygame.transform.rotate(self.bigdisplay,-45)#.convert(),-45)
         return self.rotatedScreen
 
@@ -115,7 +111,6 @@ class Player(pygame.sprite.Sprite):
         #Physics Vars
         self.velocity_y = 2
         self.direction = 0
-        self.ANGLE_MAX = 130
         self.energy = 0
         self.rampUp = 0.0
         
@@ -131,12 +126,11 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = self.xPos
         self.rect.y = self.yPos
         screen.blit(self.image, self.rect)
-        #pygame.draw.line(screen,RED, (self.rect.x+20, self.rect.y+20), (20+self.rect.x + 150*math.sin(math.radians(self.angle)), 20+self.rect.y+150*math.cos(math.radians(self.angle))), 3)
+
 
     def update(self,direction):
         self.direction = direction
         self.calc_physics()
-        print 'In update: {0},{1}'.format(self.xPos, self.yPos + self.velocity_y)
         return (self.xPos, self.yPos + self.velocity_y)
         
 
@@ -163,9 +157,21 @@ class Player(pygame.sprite.Sprite):
             self.velocity_y = 0
             self.image = self.levelimage
         #print self.energy
-    
-    
-            
+
+def menuScreen(screen, clock, text):
+    inMenu = True
+    screen.fill(WHITE)
+    myfont = pygame.font.SysFont('Arial Black', 15) #creates the font, size 15 (you can change this)
+    label = myfont.render(text, 1, BLACK) #creates the label
+    x = screen.get_rect().width/2-label.get_rect().width/2
+    y = screen.get_rect().height/2-label.get_rect().height/2
+    screen.blit(label, (x, y)) #renders the label
+    pygame.display.flip()
+    while inMenu:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                inMenu = False
+        clock.tick(60)
 
 
     
@@ -174,15 +180,20 @@ def main():
     #initialize screen surface
     screen = pygame.display.set_mode(SCREENSIZE)
     pygame.display.set_caption("Wingsuit!")
-    mylevel=Level(WIDTH, HEIGHT, 650, 175)
+    mylevel=Level(WIDTH, HEIGHT, 650, 200)
     #loop until player closes
     running = True
+    lost = False
+    score = 0
+    
 
     #Manage screen updates
     clock = pygame.time.Clock()
     
     player = Player(412,270)
-
+    
+    menuScreen(screen,clock,'Press any key to start game')
+    
     #----- Main Game Loop-----
     while running:
         for event in pygame.event.get():
@@ -206,13 +217,17 @@ def main():
         mylevel.generate(SCROLLSPEED)
         screen2=mylevel.draw()
         screen.blit(screen2, (-WIDTH/1.95,-HEIGHT/1.95))
-        print mylevel.collision(playerxy, screen)
-        player.draw(screen, 0) 
-        pygame.display.flip()
+        if mylevel.collision(playerxy, screen):
+            running = False
+            lost = True
+        player.draw(screen, 0)
+
         # Go ahead and update the screen with what we've drawn.
-        
-        
-        
+        pygame.display.flip()
+        score += 1
+
+    if lost:
+        menuScreen(screen,clock,'Congrats your score was {0}'.format(score))
 
 if __name__ == "__main__":
       main()

@@ -113,7 +113,6 @@ class Player(pygame.sprite.Sprite):
         self.downimage = pygame.image.load("images/wingsuitdown.png").convert()
         self.downimage.set_colorkey(WHITE)
         self.image = self.levelimage
-
         #define rect for collision and such
         self.rect = self.image.get_rect()
 
@@ -170,18 +169,45 @@ class Player(pygame.sprite.Sprite):
 def menuScreen(screen, clock, text):
     inMenu = True
     screen.fill(WHITE)
-    myfont = pygame.font.SysFont('Arial Black', 15) #creates the font, size 15 (you can change this)
+    myfont = pygame.font.SysFont('Arial Black', 30) #creates the font, size 15 (you can change this)
     label = myfont.render(text, 1, BLACK) #creates the label
     x = screen.get_rect().width/2-label.get_rect().width/2
     y = screen.get_rect().height/2-label.get_rect().height/2
     screen.blit(label, (x, y)) #renders the label
+    image =pygame.image.load("images/Title_Frames/target-0.png")
+    screen.blit(image, (250,175))
     pygame.display.flip()
+    
+    gifcounter=(0,0)
     while inMenu:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 inMenu = False
+        gifcounter=Titlegif(gifcounter,screen)
         clock.tick(60)
 
+def Titlegif(counter,screen):
+    
+    titlecount,pause=counter
+    if pause==0:
+        if titlecount<7:
+            titlecount+=1
+        else:   
+            titlecount=0
+        image =pygame.image.load("images/Title_Frames/target-%d.png"%titlecount)
+        screen.blit(image, (265,175))
+        pygame.display.flip()
+        pause+=1
+        return (titlecount,pause)
+    elif pause>3:
+        pause=0
+        return (titlecount,pause)
+    else:
+        pause+=1
+        return (titlecount,pause)
+    
+
+    
 def Scorecounter(screen, score):
     myfont=pygame.font.SysFont('Arial Black', 30)
     label= myfont.render("You're Score is: %d" % score, 1, WHITE)
@@ -189,6 +215,7 @@ def Scorecounter(screen, score):
     y = HEIGHT-70
     screen.blit(label, (x,y))
     pygame.display.flip()
+
     
 def main():
     pygame.init()
@@ -237,7 +264,7 @@ def main():
             lost = True
         player.draw(screen, 0)
         Scorecounter(screen, score)
-
+        
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
         score += 1
